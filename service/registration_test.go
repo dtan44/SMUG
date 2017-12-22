@@ -8,7 +8,6 @@ import (
 func setupServiceRegister() {
 	serviceMap = make(map[string]string)
 	healthCheck = healthCheckURL
-	mapPrint = mapToString
 	request = func(url, httpMethod string,
 		headers map[string]string, body string,
 		client clientInterface) (*http.Response, []byte, error) {

@@ -1,11 +1,8 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -17,7 +14,6 @@ const (
 var (
 	serviceMap  map[string]string
 	healthCheck func(URL string) bool
-	mapPrint    func(map[string]string) string
 	request     func(url, httpMethod string,
 		headers map[string]string, body string,
 		client clientInterface) (*http.Response, []byte, error)
@@ -26,7 +22,6 @@ var (
 func init() {
 	serviceMap = make(map[string]string)
 	healthCheck = healthCheckURL
-	mapPrint = mapToString
 	request = sendRequest
 }
 
@@ -54,8 +49,10 @@ func (rs RegistrationService) Register(serviceName, serviceURL string) error {
 	}
 
 	if _, ok := serviceMap[serviceName]; !ok {
+		if string(serviceURL[len(serviceURL)-1]) != "/" {
+			serviceURL += "/"
+		}
 		serviceMap[serviceName] = serviceURL
-		log.Info(mapPrint(serviceMap))
 		return nil
 	}
 
@@ -74,14 +71,14 @@ func (rs RegistrationService) Deregister(serviceName string) error {
 	return errors.New("Service Name does not Exist")
 }
 
-func mapToString(data map[string]string) string {
-	jsonString, err := json.Marshal(data)
-	if err != nil {
-		log.Error("mapToString Error: " + err.Error())
-		return ""
-	}
-	return string(jsonString)
-}
+// func mapToString(data map[string]string) string {
+// 	jsonString, err := json.Marshal(data)
+// 	if err != nil {
+// 		log.Error("mapToString Error: " + err.Error())
+// 		return ""
+// 	}
+// 	return string(jsonString)
+// }
 
 //URL must return 200 to GET baseURL/healthcheck
 func healthCheckURL(URL string) bool {

@@ -79,6 +79,5 @@ func sendRequest(url, httpMethod string, headers map[string]string,
 		log.Error("Error reading response body")
 		return nil, nil, err
 	}
-	log.Info(rsBody)
 	return rs, rsBody, nil
 }
