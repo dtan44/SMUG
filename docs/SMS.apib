@@ -1,0 +1,79 @@
+FORMAT: 1A
+
+# Simple Microservice API
+
+Simple Microservice API documentation.
+
+## Error States
+All applicable standards for HTTP status codes are used by the resources and resource collections in this API.
+- **HTTP 400** indicates a bad request, usually malformed URL. Incorrect parameters will be ignored.
+- **HTTP 500** indicates the server failed to process the request or an exception occurred.
+
+# Group Service
+
+## Register [/register/{?name}]
+
+### Register [PUT]
+Register Service.
+
++ Parameters
+    + name - service name
+
++ Request
+
+    + Headers
+
+            secret-key: (string) - secret key
+
+    + Body
+
+            {
+                "URL": "service url"
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "result": "success" or "invalid",
+                "reason": "optional
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                Invalid
+            }
+
+## Deregister [/deregister/{?name}]
+
+### Deregister [DELETE]
+Deregister Service.
+
++ Parameters
+    + name - service name
+
++ Request
+
+    + Headers
+
+            secret-key: (string) - secret key
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "result": "success" or "invalid"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                Invalid
+            }
