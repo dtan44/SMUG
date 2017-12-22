@@ -28,12 +28,12 @@ type RegisterMock struct {
 	CreateUserWork func() (string, error)
 }
 
-func (rs RegisterMock) Register(serviceName, serviceURL string) error {
-	return rs.Work()
+func (rm RegisterMock) Register(serviceName, serviceURL string) error {
+	return rm.Work()
 }
 
-func (rs RegisterMock) Deregister(serviceName string) error {
-	return rs.Work()
+func (rm RegisterMock) Deregister(serviceName string) error {
+	return rm.Work()
 }
 
 func TestHandleRegisterFail(t *testing.T) {
@@ -292,6 +292,85 @@ func TestHandleDeregisterSuccess(t *testing.T) {
 
 	// Check the response body.
 	expected := `{"result":"success"}`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+type DiscoveryMock struct {
+	Work           func() error
+	CreateUserWork func() (string, error)
+}
+
+func (dm DiscoveryMock) List() []string {
+	return []string{""}
+}
+
+func (dm DiscoveryMock) Route(r *http.Request) (*http.Response, []byte, error) {
+	var rsp http.Response
+	return &rsp, nil, nil
+}
+
+func TestHandleListSuccess(t *testing.T) {
+	setupServiceHandler()
+	var sh ServiceHandler
+	sh.Discovery = DiscoveryMock{Work: ReturnNoError}
+
+	// Create empty request for handler.
+	req, err := http.NewRequest("GET", "/list", strings.NewReader(""))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(sh.HandleList)
+
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body.
+	expected := `{"services":[""]}`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestHandleListJSONFail(t *testing.T) {
+	setupServiceHandler()
+	var sh ServiceHandler
+	sh.Discovery = DiscoveryMock{Work: ReturnNoError}
+	jsonMarshal = func(v interface{}) ([]byte, error) {
+		return nil, errors.New("Test")
+	}
+
+	// Create empty request for handler.
+	req, err := http.NewRequest("GET", "/list", strings.NewReader(""))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(sh.HandleList)
+
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code.
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body.
+	expected := "Test\n"
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)

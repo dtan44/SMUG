@@ -1,6 +1,9 @@
 package service
 
-import "testing"
+import (
+	"strconv"
+	"testing"
+)
 
 func setupServiceDiscovery() {
 	serviceMap = make(map[string]string)
@@ -10,13 +13,12 @@ func setupServiceDiscovery() {
 func TestDiscoveryList(t *testing.T) {
 	setupServiceDiscovery()
 	var ds DiscoveryService
-
-	testText := `{}`
+	serviceMap["test"] = "test"
 
 	// invalid URL
 	res := ds.List()
-	if res != testText {
+	if len(res) != 1 {
 		t.Errorf("service returned unexpected error: got %v want %v",
-			res, testText)
+			strconv.Itoa(len(res)), strconv.Itoa(0))
 	}
 }

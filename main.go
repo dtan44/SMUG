@@ -46,6 +46,13 @@ func main() {
 	put.AllowedMethods = []string{http.MethodPut}
 	http.Handle("/register/", put.ApplyMiddleware(http.HandlerFunc(sh.HandleRegister)))
 
+	var route handler.CommonHandler
+	route.AllowedMethods = []string{http.MethodGet, http.MethodPost,
+		http.MethodPut, http.MethodDelete, http.MethodHead,
+		http.MethodConnect, http.MethodOptions, http.MethodPatch,
+		http.MethodTrace}
+	http.Handle("/service/", route.ApplyMiddleware(http.HandlerFunc(sh.HandleRoute)))
+
 	//TODO: add custom handler for / as a catch all, http has its own default which returns a 404
 	//http.Handle("/", mh.BodyCloser(http.HandlerFunc(bye)))
 

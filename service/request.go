@@ -63,7 +63,7 @@ func sendRequest(url, httpMethod string, headers map[string]string,
 	if err != nil {
 		log.Error(err)
 	}
-	log.Debug(strings.TrimRight(string(requestDump), "\r\n"))
+	log.Info(strings.TrimRight(string(requestDump), "\r\n"))
 
 	// Send request
 	rs, err := client.Do(req)
@@ -79,5 +79,6 @@ func sendRequest(url, httpMethod string, headers map[string]string,
 		log.Error("Error reading response body")
 		return nil, nil, err
 	}
+	log.Info(rsBody)
 	return rs, rsBody, nil
 }

@@ -105,7 +105,7 @@ type ServicesList struct {
 	Services []string `json:"services"`
 }
 
-//HandleList deregister service
+//HandleList list services
 func (sh ServiceHandler) HandleList(w http.ResponseWriter, r *http.Request) {
 	serviceList := ServicesList{sh.Discovery.List()}
 
@@ -117,4 +117,37 @@ func (sh ServiceHandler) HandleList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(j)
+}
+
+//HandleRoute route services
+func (sh ServiceHandler) HandleRoute(w http.ResponseWriter, r *http.Request) {
+	res, body, err := sh.Discovery.Route(r)
+	if err != nil {
+		resp := Result{"failure", err.Error()}
+		j, err := jsonMarshal(resp)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(j)
+		return
+	}
+
+	// add all headers (including multi-valued headers)
+	for key, vals := range res.Header {
+		val := ""
+		for _, item := range vals {
+			val += item + ","
+		}
+		// remove last comma
+		val = val[:len(val)-1]
+
+		w.Header().Set(key, val)
+	}
+
+	w.WriteHeader(res.StatusCode)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(body)
 }
