@@ -40,24 +40,27 @@ type registerBody struct {
 func (sh ServiceHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	serviceName := strings.TrimPrefix(r.URL.Path, registerPath)
 	secretKey := r.Header.Get("secret-key")
+	var res Result
 
 	// get serviceURL from request body
 	requestBody := registerBody{}
-	readJSONBody(r.Body, &requestBody)
-	serviceURL := requestBody.URL
-
-	var res Result
-
-	if !validateKey(secretKey) {
-		// http.Error(w, "Incorrect Key", http.StatusInternalServerError)
-		res = Result{"failure", "Incorrect Key"}
+	err := readJSONBody(r.Body, &requestBody)
+	if err != nil {
+		res = Result{"failure", err.Error()}
 	} else {
-		err := sh.Registration.Register(serviceName, serviceURL)
+		serviceURL := requestBody.URL
 
-		if err != nil {
-			res = Result{"failure", err.Error()}
+		if !validateKey(secretKey) {
+			// http.Error(w, "Incorrect Key", http.StatusInternalServerError)
+			res = Result{"failure", "Incorrect Key"}
 		} else {
-			res = Result{"success", ""}
+			err := sh.Registration.Register(serviceName, serviceURL)
+
+			if err != nil {
+				res = Result{"failure", err.Error()}
+			} else {
+				res = Result{"success", ""}
+			}
 		}
 	}
 

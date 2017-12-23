@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net"
@@ -13,11 +14,15 @@ import (
 )
 
 var (
-	secretKey string
+	secretKey     string
+	readAllFunc   func(r io.Reader) ([]byte, error)
+	jsonUnmarshal func(data []byte, v interface{}) error
 )
 
 func init() {
 	secretKey = viper.GetString("key.secret")
+	readAllFunc = ioutil.ReadAll
+	jsonUnmarshal = json.Unmarshal
 }
 
 func validateKey(key string) bool {
@@ -27,21 +32,26 @@ func validateKey(key string) bool {
 	return false
 }
 
-func readJSONBody(body io.ReadCloser, t interface{}) {
-	res, err := ioutil.ReadAll(body)
+func readJSONBody(body io.ReadCloser, t interface{}) error {
+	res, err := readAllFunc(body)
 	if err != nil {
-		log.Error("Error readJSONBody: " + err.Error())
+		log.Error(" readJSONBody Error: " + err.Error())
+		return err
 	}
 
 	// check if body is empty
 	if len(res) == 0 {
-		return
+		log.Error("readJSONBody Error: Length 0")
+		return errors.New("Length 0")
 	}
 
-	err = json.Unmarshal(res, t)
+	err = jsonUnmarshal(res, t)
 	if err != nil {
-		log.Error("Error readJSONBody: " + err.Error())
+		log.Error("readJSONBody Error: " + err.Error())
+		return err
 	}
+
+	return nil
 }
 
 // https://blog.golang.org/context/userip/userip.go
