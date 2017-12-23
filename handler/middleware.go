@@ -7,6 +7,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+var apiKey string
+
+func init() {
+	apiKey = viper.GetString("key.api")
+}
+
 //CommonHandler shared handler
 type CommonHandler struct {
 	AllowedMethods []string
@@ -14,7 +20,7 @@ type CommonHandler struct {
 
 //ApplyMiddleware apply middleware
 func (ch CommonHandler) ApplyMiddleware(next http.Handler) http.Handler {
-	return ch.bodyCloser(ch.checkKey(ch.checkMethods(next)))
+	return ch.closeBody(ch.checkKey(ch.checkMethods(next)))
 }
 
 func (ch CommonHandler) checkMethods(next http.Handler) http.Handler {
@@ -34,23 +40,26 @@ func (ch CommonHandler) checkMethods(next http.Handler) http.Handler {
 		}
 
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		log.Println(r.Method, "is not allowed")
+		log.Info(r.Method, "is not allowed")
+		getIP(r)
 		return
 	})
 }
 
-func (ch CommonHandler) bodyCloser(next http.Handler) http.Handler {
+func (ch CommonHandler) closeBody(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		defer log.Println("Closed Body")
+		if r.Body != nil {
+			defer r.Body.Close()
+		}
+		defer log.Info("Closed Body")
 		next.ServeHTTP(w, r)
 	})
 }
 
 func (ch CommonHandler) checkKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiKey := r.Header.Get("api-key")
-		if apiKey != viper.Get("key.api") {
+		key := r.Header.Get("api-key")
+		if key != apiKey {
 			w.WriteHeader(http.StatusForbidden)
 			log.Println("Forbidden access")
 			getIP(r)

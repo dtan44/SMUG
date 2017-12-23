@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"testing"
 )
 
@@ -13,6 +15,7 @@ func setupHelper() {
 	secretKey = "correct"
 	readAllFunc = ioutil.ReadAll
 	jsonUnmarshal = json.Unmarshal
+	parseIP = net.ParseIP
 }
 
 func TestValidateKey(t *testing.T) {
@@ -84,4 +87,43 @@ func TestReadJSONUnmarshalFail(t *testing.T) {
 		t.Errorf("function returned struct: got %v want %v",
 			testThing.Test, structText)
 	}
+}
+
+func TestGetIPPortFail(t *testing.T) {
+	req := http.Request{}
+	err := getIP(&req)
+
+	errorText := "missing port in address"
+	if err.Error() != errorText {
+		t.Errorf("function returned struct: got %v want %v",
+			err.Error(), errorText)
+	}
+	setupHelper()
+}
+
+func TestGetIPFail(t *testing.T) {
+	req := http.Request{}
+	req.RemoteAddr = `127.0.0.1:8080`
+	parseIP = func(s string) net.IP { return nil }
+	err := getIP(&req)
+
+	errorText := "parseIP Error"
+	if err.Error() != errorText {
+		t.Errorf("function returned struct: got %v want %v",
+			err.Error(), errorText)
+	}
+	setupHelper()
+}
+
+func TestGetIPSuccess(t *testing.T) {
+	req := http.Request{}
+	req.RemoteAddr = `127.0.0.1:8080`
+	err := getIP(&req)
+
+	errorText := "nil"
+	if err != nil {
+		t.Errorf("function returned struct: got %v want %v",
+			err.Error(), errorText)
+	}
+	setupHelper()
 }

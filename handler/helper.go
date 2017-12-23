@@ -17,12 +17,14 @@ var (
 	secretKey     string
 	readAllFunc   func(r io.Reader) ([]byte, error)
 	jsonUnmarshal func(data []byte, v interface{}) error
+	parseIP       func(s string) net.IP
 )
 
 func init() {
 	secretKey = viper.GetString("key.secret")
 	readAllFunc = ioutil.ReadAll
 	jsonUnmarshal = json.Unmarshal
+	parseIP = net.ParseIP
 }
 
 func validateKey(key string) bool {
@@ -55,17 +57,18 @@ func readJSONBody(body io.ReadCloser, t interface{}) error {
 }
 
 // https://blog.golang.org/context/userip/userip.go
-func getIP(req *http.Request) {
+func getIP(req *http.Request) error {
 
 	ip, port, err := net.SplitHostPort(req.RemoteAddr)
 	if err != nil {
 		log.Errorf("UserIP: %q is not IP:port", req.RemoteAddr)
+		return err
 	}
 
-	userIP := net.ParseIP(ip)
+	userIP := parseIP(ip)
 	if userIP == nil {
 		log.Errorf("userip: %q is not IP:port", req.RemoteAddr)
-		return
+		return errors.New("parseIP Error")
 	}
 
 	// This will only be defined when site is accessed via non-anonymous proxy
@@ -75,4 +78,5 @@ func getIP(req *http.Request) {
 	log.Infof("IP: %s", ip)
 	log.Infof("Port: %s", port)
 	log.Infof("Forwarded for: %s", forward)
+	return nil
 }

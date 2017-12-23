@@ -16,7 +16,6 @@ func setupServiceHandler() {
 	secretKey = "correct"
 	readAllFunc = ioutil.ReadAll
 	jsonUnmarshal = json.Unmarshal
-
 }
 
 var (
