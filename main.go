@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"./config"
-	"./handler"
-	"./service"
+	"github.com/dtan44/SMUG/config"
+	"github.com/dtan44/SMUG/handler"
+	"github.com/dtan44/SMUG/service"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

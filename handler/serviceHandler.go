@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"../service"
+	"github.com/dtan44/SMUG/service"
 )
 
 // Global variables

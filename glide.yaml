@@ -1,0 +1,8 @@
+package: github.com/dtan44/SMUG
+import:
+- package: github.com/sirupsen/logrus
+  version: ~1.0.4
+- package: github.com/spf13/pflag
+  version: ~1.0.0
+- package: github.com/spf13/viper
+  version: ~1.0.0

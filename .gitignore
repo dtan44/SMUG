@@ -5,7 +5,6 @@
 *.dylib
 *.DS_STORE
 .vscode/
-/vendor
 
 # Test binary, build with `go test -c`
 *.test
@@ -25,3 +24,6 @@ coverage.txt
 
 # environment files
 config.dev.yml
+
+# integration tests
+/integrationTests
